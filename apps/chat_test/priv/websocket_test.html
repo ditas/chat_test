@@ -88,6 +88,10 @@
 
         function onClose(evt) {
             showScreen('<span style="color: red;">DISCONNECTED </span>');
+
+            $('#current_user').val('');
+            $('#username').show();
+            $('#connected').hide();
         };
 
         function onMessage(evt) {
