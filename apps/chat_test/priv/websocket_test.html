@@ -19,8 +19,8 @@
             $('#status').append('<p><span style="color: green;">websockets are supported </span></p>');
                 connect();
             };
-            $("#connected").hide();
-            $("#content").hide();
+            //$("#connected").hide();
+            //$("#content").hide();
         };
 
         function connect()
@@ -38,11 +38,21 @@
             websocket.close();
         };
 
-        function toggle_connection(){
+        //function toggle_connection(){
+        //    if(websocket.readyState == websocket.OPEN){
+        //        disconnect();
+        //    } else {
+        //        connect();
+        //    };
+        //};
+
+        function sendName() {
             if(websocket.readyState == websocket.OPEN){
-                disconnect();
+                txt = $("#send_name").val();
+                websocket.send(txt);
+                //showScreen('sending: ' + txt);
             } else {
-                connect();
+                showScreen('websocket is not connected');
             };
         };
 
@@ -68,6 +78,17 @@
 
         function onMessage(evt) {
             showScreen('<span style="color: blue;">RESPONSE: ' + evt.data+ '</span>');
+
+            alert(evt.data);
+
+            message = JSON.parse(evt.data);
+
+            if ( message.user !== undefined) {
+                $('#user').html(message.user);
+            }
+            if(message.reply !== undefined) {
+                $('#server_reply').html(message.reply);
+            }
         };
 
         function onError(evt) {
@@ -95,23 +116,28 @@
 <div id="navigation">
 
     <p id="connecting">
-        <input type='text' id="server" value="ws://localhost:8080/websocket/test">
-        <button type="button" onclick="toggle_connection()">connection</button>
+        <input type='hidden' id="server" value="ws://localhost:8080/websocket/test">
+        <button type="button" onclick="connect()">connect</button>
     </p>
-
 
     <hr>
 
-
     <div id="connected">
         <p>
+            <input type='text' id="send_name" value="" placeholder="Enter your name">
+            <button type="button" onclick="sendName();">Start chat</button>
+        </p>
+        <p>
             <input type='text' id="send_txt" value="">
-            <button type="button" onclick="sendTxt();">send</button>
+            <button type="button" onclick="sendTxt();">Send</button>
         </p>
     </div>
 
 
     <div id="content" style="border:1px solid #000">
+        <p>Username: <span id="user"></span></p>
+        <p>Server reply: <span id="server_reply"></span></p>
+
         <button id="clear" onclick="clearScreen()" >Clear text</button>
         <div id="output"></div>
     </div>

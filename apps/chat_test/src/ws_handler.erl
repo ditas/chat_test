@@ -9,28 +9,39 @@
 -module(ws_handler).
 -author("pravosudov").
 
+-record(state, {
+    is_started = false
+}).
+
 %% API
 -export([init/2]).
 -export([websocket_init/1]).
 -export([websocket_handle/2]).
 -export([websocket_info/2]).
 
-init(Req, Opts) ->
-    {cowboy_websocket, Req, Opts}.
+init(Req, _Opts) ->
+    {cowboy_websocket, Req, #state{}}.
 
 websocket_init(State) ->
 %%    erlang:start_timer(1000, self(), <<"Hello!">>),
     {ok, State}.
 
-websocket_handle({text, Msg}, State) ->
+websocket_handle({text, Msg}, State#state{is_started = false}) ->
+
+    io:format("~p~n", [State]),
 
 %%    io:format("-------IN ~p~n", [Msg]), %% <<"{\"message\":\"fsdf\"}">>
 
     [{BinName}] = simple_json_helper:parse(Msg),
+    Name = binary_to_list(BinName),
 
-    Reply = "{\"reply\": \"Your name is ~p\"}",
+    Reply = "{
+        \"reply\": ~p,
+        \"user\": ~p
+    }",
     Reply1 = io_lib:format(Reply, [
-        binary_to_list(BinName)
+        Name,
+        Name
     ]),
 
 %%    io:format("-------OUT ~s~n", [Reply1]),
