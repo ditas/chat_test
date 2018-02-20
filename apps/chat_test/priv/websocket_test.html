@@ -85,6 +85,7 @@
 
             if ( message.user !== undefined) {
                 $('#user').html(message.user);
+                $('#send_name').hide();
             }
             if(message.reply !== undefined) {
                 $('#server_reply').html(message.reply);

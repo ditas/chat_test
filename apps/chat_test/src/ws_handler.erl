@@ -27,9 +27,6 @@ websocket_init(State) ->
     {ok, State}.
 
 websocket_handle({text, Msg}, #state{is_started = false} = State) ->
-
-%%    io:format("-------IN ~p~n", [Msg]), %% <<"{\"message\":\"fsdf\"}">>
-
     [{BinName}] = simple_json_helper:parse(Msg),
     Name = binary_to_list(BinName),
 
@@ -44,15 +41,20 @@ websocket_handle({text, Msg}, #state{is_started = false} = State) ->
             R1 = io_lib:format(R, [Reason]),
             {R1, State}
     end,
-
-%%    io:format("-------OUT ~s~n", [Reply]),
-
     {reply, {text, Reply}, State1};
+websocket_handle({text, Msg}, #state{is_started = true} = State) ->
+    [{BinMsg}] = simple_json_helper:parse(Msg),
+    chat_session:cast_all(BinMsg),
+    {reply, {text, ""}, State};
 websocket_handle(_Data, State) ->
     {ok, State}.
 
 websocket_info({timeout, _Ref, Msg}, State) ->
 %%    erlang:start_timer(1000, self(), <<"How' you doin'?">>),
     {reply, {text, Msg}, State};
+websocket_info({cast, Msg}, State) ->
+    Reply = "{\"reply\": ~p}",
+    Reply1 = io_lib:format(Reply, [binary_to_list(Msg)]),
+    {reply, {text, Reply1}, State};
 websocket_info(_Info, State) ->
     {ok, State}.
