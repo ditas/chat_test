@@ -14,7 +14,7 @@
 
             if(!("WebSocket" in window)){
                 $('#status').append('<p><span style="color: red;">websockets are not supported </span></p>');
-                $("#navigation").hide();
+                //$("#navigation").hide();
             } else {
             $('#status').append('<p><span style="color: green;">websockets are supported </span></p>');
                 connect();
@@ -58,9 +58,10 @@
 
         function sendTxt() {
             if(websocket.readyState == websocket.OPEN){
+                name = $("#current_user").val();
                 txt = $("#send_txt").val();
-                websocket.send(txt);
-                showScreen('sending: ' + txt);
+                websocket.send(name + ':' + txt);
+                //showScreen('sending: ' + txt);
             } else {
                 showScreen('websocket is not connected');
             };
@@ -68,8 +69,8 @@
 
         function onOpen(evt) {
             showScreen('<span style="color: green;">CONNECTED </span>');
-            $("#connected").fadeIn('slow');
-            $("#content").fadeIn('slow');
+            //$("#connected").fadeIn('slow');
+            //$("#content").fadeIn('slow');
         };
 
         function onClose(evt) {
@@ -77,18 +78,22 @@
         };
 
         function onMessage(evt) {
-            showScreen('<span style="color: blue;">RESPONSE: ' + evt.data+ '</span>');
-
-            alert(evt.data);
+            //showScreen('<span style="color: blue;">RESPONSE: ' + evt.data+ '</span>');
 
             message = JSON.parse(evt.data);
 
-            if ( message.user !== undefined) {
+            if (message.user !== undefined) {
                 $('#user').html(message.user);
-                $('#send_name').hide();
+                $('#current_user').val(message.user);
+                $('#username').hide();
+                $('#connected').show();
             }
             if(message.reply !== undefined) {
                 $('#server_reply').html(message.reply);
+            }
+
+            if(message.from !== undefined && message.message !== undefined) {
+                showScreen('<span style="color: blue;">FROM: ' + message.from + '</span><br><span>MESSAGE: ' + message.message + '</span>');
             }
         };
 
@@ -116,28 +121,31 @@
 
 <div id="navigation">
 
-    <p id="connecting">
+    <div id="connecting">
         <input type='hidden' id="server" value="ws://localhost:8080/websocket/test">
         <button type="button" onclick="connect()">connect</button>
-    </p>
-
-    <hr>
-
-    <div id="connected">
-        <p>
-            <input type='text' id="send_name" value="" placeholder="Enter your name">
-            <button type="button" onclick="sendName();">Start chat</button>
-        </p>
-        <p>
-            <input type='text' id="send_txt" value="">
-            <button type="button" onclick="sendTxt();">Send</button>
-        </p>
     </div>
 
+    <br>
+
+    <div id="username">
+        <input type='text' id="send_name" value="" placeholder="Enter your name">
+        <button type="button" onclick="sendName();">Start chat</button>
+    </div>
+
+    <br>
+
+    <div id="connected" style="display:none;">
+        <textarea id="send_txt" placeholder="Enter your message"></textarea>
+        <button type="button" onclick="sendTxt();">Send</button>
+    </div>
+
+    <br>
 
     <div id="content" style="border:1px solid #000">
-        <p>Username: <span id="user"></span></p>
+        <p>My name: <span id="user"></span></p>
         <p>Server reply: <span id="server_reply"></span></p>
+        <p><input type="text" id="current_user"></p>
 
         <button id="clear" onclick="clearScreen()" >Clear text</button>
         <div id="output"></div>

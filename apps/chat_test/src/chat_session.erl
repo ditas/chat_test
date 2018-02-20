@@ -24,7 +24,7 @@
 
 -export([
     add_user/2,
-    cast_all/1
+    cast_all/2
 ]).
 
 -define(SERVER, ?MODULE).
@@ -107,9 +107,9 @@ handle_call(_Request, _From, State) ->
     {noreply, NewState :: #state{}} |
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
-handle_cast({cast_all, Msg}, State) ->
+handle_cast({cast_all, BinName, BinTxt}, State) ->
     ets:foldl(fun({_, Pid}, _Acc) ->
-        Pid ! {cast, Msg}
+        Pid ! {cast, BinName, BinTxt}
     end, undefined, ?TAB),
     {noreply, State};
 handle_cast(_Request, State) ->
@@ -168,8 +168,8 @@ code_change(_OldVsn, State, _Extra) ->
 add_user(UserName, Pid) ->
     gen_server:call(?SERVER, {add_user, UserName, Pid}).
 
-cast_all(Msg) ->
-    gen_server:cast(?SERVER, {cast_all, Msg}).
+cast_all(BinName, BinTxt) ->
+    gen_server:cast(?SERVER, {cast_all, BinName, BinTxt}).
 
 %%%===================================================================
 %%% Internal functions
