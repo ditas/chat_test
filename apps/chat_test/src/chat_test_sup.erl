@@ -62,14 +62,14 @@ init([]) ->
 
     SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
 
-%%    Restart = permanent,
-%%    Shutdown = 2000,
-%%    Type = worker,
-%%
-%%    AChild = {'AName', {'AModule', start_link, []},
-%%              Restart, Shutdown, Type, ['AModule']},
+    Restart = permanent,
+    Shutdown = 2000,
+    Type = worker,
 
-    {ok, {SupFlags, []}}.
+    AChild = {chat, {chat_session, start_link, []},
+              Restart, Shutdown, Type, [chat_session]},
+
+    {ok, {SupFlags, [AChild]}}.
 
 %%%===================================================================
 %%% Internal functions

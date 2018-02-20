@@ -26,27 +26,28 @@ websocket_init(State) ->
 %%    erlang:start_timer(1000, self(), <<"Hello!">>),
     {ok, State}.
 
-websocket_handle({text, Msg}, State#state{is_started = false}) ->
-
-    io:format("~p~n", [State]),
+websocket_handle({text, Msg}, #state{is_started = false} = State) ->
 
 %%    io:format("-------IN ~p~n", [Msg]), %% <<"{\"message\":\"fsdf\"}">>
 
     [{BinName}] = simple_json_helper:parse(Msg),
     Name = binary_to_list(BinName),
 
-    Reply = "{
-        \"reply\": ~p,
-        \"user\": ~p
-    }",
-    Reply1 = io_lib:format(Reply, [
-        Name,
-        Name
-    ]),
+    {Reply, State1} = case chat_session:add_user(Name, self()) of
+        {ok, added} ->
+            S = State#state{is_started = true},
+            R = "{\"user\": ~p, \"reply\": ~p}",
+            R1 = io_lib:format(R, [Name, "ok"]),
+            {R1, S};
+        {error, Reason} ->
+            R = "{\"reply\": ~p}",
+            R1 = io_lib:format(R, [Reason]),
+            {R1, State}
+    end,
 
-%%    io:format("-------OUT ~s~n", [Reply1]),
+%%    io:format("-------OUT ~s~n", [Reply]),
 
-    {reply, {text, Reply1}, State};
+    {reply, {text, Reply}, State1};
 websocket_handle(_Data, State) ->
     {ok, State}.
 
