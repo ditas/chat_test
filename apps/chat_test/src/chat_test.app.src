@@ -1,0 +1,21 @@
+%%%-------------------------------------------------------------------
+%%% @author pravosudov
+%%% @copyright (C) 2018, <COMPANY>
+%%% @doc
+%%%
+%%% @end
+%%% Created : 16. Jan 2018 15:13
+%%%-------------------------------------------------------------------
+{ application, chat_test, [
+    {description, ""},
+    {vsn, "1"},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        lager,
+        cowboy
+    ]},
+    {mod, {chat_test_app, []}},
+    {env, []}
+]}.
