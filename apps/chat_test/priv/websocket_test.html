@@ -48,8 +48,12 @@
 
         function sendName() {
             if(websocket.readyState == websocket.OPEN){
-                txt = $("#send_name").val();
-                websocket.send(txt);
+                name = $("#send_name").val();
+
+                var msg = new Object();
+                msg.name = name;
+
+                websocket.send(JSON.stringify(msg));
                 //showScreen('sending: ' + txt);
             } else {
                 showScreen('websocket is not connected');
@@ -60,7 +64,16 @@
             if(websocket.readyState == websocket.OPEN){
                 name = $("#current_user").val();
                 txt = $("#send_txt").val();
-                websocket.send(name + ':' + txt);
+
+                //websocket.send('"' + name + '"' + ':' + '"' + txt + '"');
+
+                var msg = new Object();
+                msg.name = name;
+                msg.txt = txt;
+                //websocket.send(msg);
+
+                websocket.send(JSON.stringify(msg));
+
                 //showScreen('sending: ' + txt);
             } else {
                 showScreen('websocket is not connected');
@@ -145,7 +158,7 @@
     <div id="content" style="border:1px solid #000">
         <p>My name: <span id="user"></span></p>
         <p>Server reply: <span id="server_reply"></span></p>
-        <p><input type="text" id="current_user"></p>
+        <p><input type="hidden" id="current_user"></p>
 
         <button id="clear" onclick="clearScreen()" >Clear text</button>
         <div id="output"></div>

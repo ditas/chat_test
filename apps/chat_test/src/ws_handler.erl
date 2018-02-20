@@ -27,7 +27,8 @@ websocket_init(State) ->
     {ok, State}.
 
 websocket_handle({text, Msg}, #state{is_started = false} = State) ->
-    [{BinName}] = simple_json_helper:parse(Msg),
+%%    [{BinName}] = simple_json_helper:parse(Msg),
+    [{<<"name">>, BinName}] = jsx:decode(Msg),
     Name = binary_to_list(BinName),
 
     {Reply, State1} = case chat_session:add_user(Name, self()) of
@@ -46,7 +47,8 @@ websocket_handle({text, Msg}, #state{is_started = true} = State) ->
 
     io:format("________________~p~n", [Msg]),
 
-    [{BinName, BinTxt}] = simple_json_helper:parse(Msg),
+%%    [{BinName, BinTxt}] = simple_json_helper:parse(Msg),
+    [{<<"name">>, BinName}, {<<"txt">>, BinTxt}] = jsx:decode(Msg),
     chat_session:cast_all(BinName, BinTxt),
     {reply, {text, ""}, State};
 websocket_handle(_Data, State) ->
