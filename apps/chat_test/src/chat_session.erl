@@ -29,6 +29,7 @@
 
 -define(SERVER, ?MODULE).
 -define(TAB, chat_room).
+-define(BOT_MSG, "Hello fellas, I'm a bot!").
 
 -record(state, {}).
 
@@ -67,6 +68,13 @@ start_link() ->
     {stop, Reason :: term()} | ignore).
 init([]) ->
     ets:new(?TAB, [set, named_table]),
+
+    Timeout = round(rand:uniform() * 10000),
+
+    io:format("---------- TIMEOUT ~p~n", [Timeout]),
+
+    timer:send_after(Timeout, {chat_bot_msg, ?BOT_MSG}),
+
     {ok, #state{}}.
 
 %%--------------------------------------------------------------------
@@ -133,6 +141,16 @@ handle_cast(_Request, State) ->
     {stop, Reason :: term(), NewState :: #state{}}).
 handle_info({'DOWN', _MRef, process, Pid, normal}, State) ->
     ets:match_delete(?TAB, {'_', Pid}),
+    {noreply, State};
+handle_info({chat_bot_msg, Msg}, State) ->
+    gen_server:cast(?SERVER, {cast_all, <<"chat bot">>, list_to_binary(Msg)}),
+
+    Timeout = round(rand:uniform() * 10000),
+
+    io:format("---------- TIMEOUT 2 ~p~n", [Timeout]),
+
+    timer:send_after(Timeout, {chat_bot_msg, ?BOT_MSG}),
+
     {noreply, State};
 handle_info(_Info, State) ->
 
