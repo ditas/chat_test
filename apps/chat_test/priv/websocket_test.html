@@ -17,7 +17,7 @@
                 //$("#navigation").hide();
             } else {
             $('#status').append('<p><span style="color: green;">websockets are supported </span></p>');
-                connect();
+                //connect();
             };
             //$("#connected").hide();
             //$("#content").hide();
@@ -89,9 +89,10 @@
         function onClose(evt) {
             showScreen('<span style="color: red;">DISCONNECTED </span>');
 
-            $('#current_user').val('');
-            $('#username').show();
-            $('#connected').hide();
+            //$('#current_user').val('');
+            //$('#username').show();
+            //$('#connected').hide();
+            location.reload();
         };
 
         function onMessage(evt) {
@@ -140,7 +141,8 @@
 
     <div id="connecting">
         <input type='hidden' id="server" value="ws://localhost:8080/websocket/test">
-        <button type="button" onclick="connect()">connect</button>
+        <button type="button" onclick="connect()">connect</button> |
+        <button type="button" onclick="disconnect()">disconnect</button>
     </div>
 
     <br>
@@ -162,7 +164,7 @@
     <div id="content" style="border:1px solid #000">
         <p>My name: <span id="user"></span></p>
         <p>Server reply: <span id="server_reply"></span></p>
-        <p><input type="hidden" id="current_user"></p>
+        <p><input type="text" id="current_user"></p>
 
         <button id="clear" onclick="clearScreen()" >Clear text</button>
         <div id="output"></div>

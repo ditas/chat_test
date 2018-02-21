@@ -20,7 +20,7 @@
 -export([websocket_info/2]).
 
 init(Req, _Opts) ->
-    {cowboy_websocket, Req, #state{}}.
+    {cowboy_websocket, Req, #state{}, #{idle_timeout => infinity}}.
 
 websocket_init(State) ->
 %%    erlang:start_timer(1000, self(), <<"Hello!">>),
@@ -52,6 +52,9 @@ websocket_handle({text, Msg}, #state{is_started = true} = State) ->
     chat_session:cast_all(BinName, BinTxt),
     {reply, {text, ""}, State};
 websocket_handle(_Data, State) ->
+
+    io:format("*****************~p~n", [_Data]),
+
     {ok, State}.
 
 websocket_info({timeout, _Ref, Msg}, State) ->
@@ -65,4 +68,7 @@ websocket_info({cast, BinName, BinMsg}, State) ->
     Reply1 = io_lib:format(Reply, [binary_to_list(BinMsg), binary_to_list(BinName)]),
     {reply, {text, Reply1}, State};
 websocket_info(_Info, State) ->
+
+    io:format("*****************~p~n", [_Info]),
+
     {ok, State}.

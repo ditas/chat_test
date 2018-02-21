@@ -85,6 +85,8 @@ init([]) ->
                      {stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
                      {stop, Reason :: term(), NewState :: #state{}}).
 handle_call({add_user, UserName, Pid}, _From, State) ->
+    _MRef = monitor(process, Pid),
+
     Reply = case ets:lookup(?TAB, UserName) of
         [] ->
             ets:insert(?TAB, {UserName, Pid}),
@@ -129,7 +131,13 @@ handle_cast(_Request, State) ->
     {noreply, NewState :: #state{}} |
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
+handle_info({'DOWN', _MRef, process, Pid, normal}, State) ->
+    ets:match_delete(?TAB, {'_', Pid}),
+    {noreply, State};
 handle_info(_Info, State) ->
+
+    io:format("~p~n", [_Info]),
+
     {noreply, State}.
 
 %%--------------------------------------------------------------------
