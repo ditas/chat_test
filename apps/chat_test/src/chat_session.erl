@@ -70,9 +70,6 @@ init([]) ->
     ets:new(?TAB, [set, named_table]),
 
     Timeout = round(rand:uniform() * 10000),
-
-    io:format("---------- TIMEOUT ~p~n", [Timeout]),
-
     timer:send_after(Timeout, {chat_bot_msg, ?BOT_MSG}),
 
     {ok, #state{}}.
@@ -146,16 +143,10 @@ handle_info({chat_bot_msg, Msg}, State) ->
     gen_server:cast(?SERVER, {cast_all, <<"chat bot">>, list_to_binary(Msg)}),
 
     Timeout = round(rand:uniform() * 10000),
-
-    io:format("---------- TIMEOUT 2 ~p~n", [Timeout]),
-
     timer:send_after(Timeout, {chat_bot_msg, ?BOT_MSG}),
 
     {noreply, State};
 handle_info(_Info, State) ->
-
-    io:format("~p~n", [_Info]),
-
     {noreply, State}.
 
 %%--------------------------------------------------------------------

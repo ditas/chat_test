@@ -14,13 +14,9 @@
 
             if(!("WebSocket" in window)){
                 $('#status').append('<p><span style="color: red;">websockets are not supported </span></p>');
-                //$("#navigation").hide();
             } else {
-            $('#status').append('<p><span style="color: green;">websockets are supported </span></p>');
-                //connect();
+                $('#status').append('<p><span style="color: green;">websockets are supported </span></p>');
             };
-            //$("#connected").hide();
-            //$("#content").hide();
         };
 
         function connect()
@@ -38,14 +34,6 @@
             websocket.close();
         };
 
-        //function toggle_connection(){
-        //    if(websocket.readyState == websocket.OPEN){
-        //        disconnect();
-        //    } else {
-        //        connect();
-        //    };
-        //};
-
         function sendName() {
             if(websocket.readyState == websocket.OPEN){
                 name = $("#send_name").val();
@@ -54,7 +42,6 @@
                 msg.name = name;
 
                 websocket.send(JSON.stringify(msg));
-                //showScreen('sending: ' + txt);
             } else {
                 showScreen('websocket is not connected');
             };
@@ -65,16 +52,11 @@
                 name = $("#current_user").val();
                 txt = $("#send_txt").val();
 
-                //websocket.send('"' + name + '"' + ':' + '"' + txt + '"');
-
                 var msg = new Object();
                 msg.name = name;
                 msg.txt = txt;
-                //websocket.send(msg);
 
                 websocket.send(JSON.stringify(msg));
-
-                //showScreen('sending: ' + txt);
             } else {
                 showScreen('websocket is not connected');
             };
@@ -82,8 +64,6 @@
 
         function onOpen(evt) {
             showScreen('<span style="color: green;">CONNECTED </span>');
-            //$("#connected").fadeIn('slow');
-            //$("#content").fadeIn('slow');
         };
 
         function onClose(evt) {
@@ -92,12 +72,9 @@
             $('#current_user').val('');
             $('#username').show();
             $('#connected').hide();
-            //location.reload();
         };
 
         function onMessage(evt) {
-            //showScreen('<span style="color: blue;">RESPONSE: ' + evt.data+ '</span>');
-
             message = JSON.parse(evt.data);
 
             if (message.user !== undefined) {
