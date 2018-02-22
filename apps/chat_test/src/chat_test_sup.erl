@@ -69,7 +69,10 @@ init([]) ->
     AChild = {chat, {chat_session, start_link, []},
               Restart, Shutdown, Type, [chat_session]},
 
-    {ok, {SupFlags, [AChild]}}.
+    AChild1 = {bot, {chat_bot, start_link, []},
+              Restart, Shutdown, Type, [chat_bot]},
+
+    {ok, {SupFlags, [AChild, AChild1]}}.
 
 %%%===================================================================
 %%% Internal functions

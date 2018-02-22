@@ -4,9 +4,9 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 20. Feb 2018 11:45
+%%% Created : 22. Feb 2018 14:16
 %%%-------------------------------------------------------------------
--module(chat_session).
+-module(chat_bot).
 -author("pravosudov").
 
 -behaviour(gen_server).
@@ -22,13 +22,9 @@
          terminate/2,
          code_change/3]).
 
--export([
-    add_user/2,
-    cast_all/2
-]).
-
 -define(SERVER, ?MODULE).
--define(TAB, chat_room).
+-define(BOT_NAME, <<"chat bot">>).
+-define(BOT_MSG, "Hello fellas, I'm a bot!").
 
 -record(state, {}).
 
@@ -66,7 +62,8 @@ start_link() ->
     {ok, State :: #state{}} | {ok, State :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term()} | ignore).
 init([]) ->
-    ets:new(?TAB, [set, named_table]),
+    Timeout = round(rand:uniform() * 10000),
+    timer:send_after(Timeout, {chat_bot_msg, ?BOT_MSG}),
     {ok, #state{}}.
 
 %%--------------------------------------------------------------------
@@ -84,17 +81,6 @@ init([]) ->
                      {noreply, NewState :: #state{}, timeout() | hibernate} |
                      {stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
                      {stop, Reason :: term(), NewState :: #state{}}).
-handle_call({add_user, BinName, Pid}, _From, State) ->
-    _MRef = monitor(process, Pid),
-
-    Reply = case ets:lookup(?TAB, BinName) of
-        [] ->
-            ets:insert(?TAB, {BinName, Pid}),
-            {ok, added};
-        _ ->
-            {error, duplicate_user_name}
-    end,
-    {reply, Reply, State};
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
 
@@ -109,11 +95,6 @@ handle_call(_Request, _From, State) ->
     {noreply, NewState :: #state{}} |
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
-handle_cast({cast_all, BinName, BinTxt}, State) ->
-    ets:foldl(fun({_, Pid}, _Acc) ->
-        Pid ! {cast, BinName, BinTxt}
-    end, undefined, ?TAB),
-    {noreply, State};
 handle_cast(_Request, State) ->
     {noreply, State}.
 
@@ -131,8 +112,12 @@ handle_cast(_Request, State) ->
     {noreply, NewState :: #state{}} |
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
-handle_info({'DOWN', _MRef, process, Pid, _Status}, State) ->
-    ets:match_delete(?TAB, {'_', Pid}),
+handle_info({chat_bot_msg, Msg}, State) ->
+    chat_session:cast_all(?BOT_NAME, list_to_binary(Msg)),
+
+    Timeout = round(rand:uniform() * 10000),
+    timer:send_after(Timeout, {chat_bot_msg, ?BOT_MSG}),
+
     {noreply, State};
 handle_info(_Info, State) ->
     {noreply, State}.
@@ -166,15 +151,6 @@ terminate(_Reason, _State) ->
                      {ok, NewState :: #state{}} | {error, Reason :: term()}).
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
-
-%%%===================================================================
-%%% External functions
-%%%===================================================================
-add_user(BinName, Pid) ->
-    gen_server:call(?SERVER, {add_user, BinName, Pid}).
-
-cast_all(BinName, BinTxt) ->
-    gen_server:cast(?SERVER, {cast_all, BinName, BinTxt}).
 
 %%%===================================================================
 %%% Internal functions

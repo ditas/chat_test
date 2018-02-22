@@ -27,18 +27,15 @@ websocket_init(State) ->
 
 websocket_handle({text, Msg}, #state{is_started = false} = State) ->
     [{<<"name">>, BinName}] = jsx:decode(Msg),
-    Name = binary_to_list(BinName),
 
-    {Reply, State1} = case chat_session:add_user(Name, self()) of
+    {Reply, State1} = case chat_session:add_user(BinName, self()) of
         {ok, added} ->
             S = State#state{is_started = true},
-            R = "{\"user\": ~p, \"reply\": ~p}",
-            R1 = io_lib:format(R, [Name, "ok"]),
-            {R1, S};
+            R = jsx:encode([{<<"user">>, BinName},{<<"reply">>, ok}]),
+            {R, S};
         {error, Reason} ->
-            R = "{\"reply\": ~p}",
-            R1 = io_lib:format(R, [Reason]),
-            {R1, State}
+            R = jsx:encode([{<<"reply">>, Reason}]),
+            {R, State}
     end,
     {reply, {text, Reply}, State1};
 websocket_handle({text, Msg}, #state{is_started = true} = State) ->
@@ -48,11 +45,8 @@ websocket_handle({text, Msg}, #state{is_started = true} = State) ->
 websocket_handle(_Data, State) ->
     {ok, State}.
 
-websocket_info({timeout, _Ref, Msg}, State) ->
-    {reply, {text, Msg}, State};
 websocket_info({cast, BinName, BinMsg}, State) ->
-    Reply = "{\"message\": ~p, \"from\": ~p}",
-    Reply1 = io_lib:format(Reply, [binary_to_list(BinMsg), binary_to_list(BinName)]),
-    {reply, {text, Reply1}, State};
+    Reply = jsx:encode([{<<"message">>, BinMsg},{<<"from">>, BinName}]),
+    {reply, {text, Reply}, State};
 websocket_info(_Info, State) ->
     {ok, State}.
