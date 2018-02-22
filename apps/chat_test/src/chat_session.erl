@@ -85,6 +85,8 @@ init([]) ->
                      {stop, Reason :: term(), Reply :: term(), NewState :: #state{}} |
                      {stop, Reason :: term(), NewState :: #state{}}).
 handle_call({add_user, BinName, Pid}, _From, State) ->
+    lager:debug("User added NAME ~p PID ~p", [BinName, Pid]),
+
     _MRef = monitor(process, Pid),
 
     Reply = case ets:lookup(?TAB, BinName) of
@@ -110,6 +112,8 @@ handle_call(_Request, _From, State) ->
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
 handle_cast({cast_all, BinName, BinTxt}, State) ->
+    lager:debug("Broadcast, NAME ~p MSG ~p", [BinName, BinTxt]),
+
     ets:foldl(fun({_, Pid}, _Acc) ->
         Pid ! {cast, BinName, BinTxt}
     end, undefined, ?TAB),
@@ -132,6 +136,8 @@ handle_cast(_Request, State) ->
     {noreply, NewState :: #state{}, timeout() | hibernate} |
     {stop, Reason :: term(), NewState :: #state{}}).
 handle_info({'DOWN', _MRef, process, Pid, _Status}, State) ->
+    lager:debug("User disconnected PID ~p", [Pid]),
+
     ets:match_delete(?TAB, {'_', Pid}),
     {noreply, State};
 handle_info(_Info, State) ->

@@ -26,6 +26,8 @@ websocket_init(State) ->
     {ok, State}.
 
 websocket_handle({text, Msg}, #state{is_started = false} = State) ->
+    lager:debug("Chat not started, IN ~p", [Msg]),
+
     [{<<"name">>, BinName}] = jsx:decode(Msg),
 
     {Reply, State1} = case chat_session:add_user(BinName, self()) of
@@ -39,6 +41,8 @@ websocket_handle({text, Msg}, #state{is_started = false} = State) ->
     end,
     {reply, {text, Reply}, State1};
 websocket_handle({text, Msg}, #state{is_started = true} = State) ->
+    lager:debug("Chat started, IN ~p", [Msg]),
+
     [{<<"name">>, BinName}, {<<"txt">>, BinTxt}] = jsx:decode(Msg),
     chat_session:cast_all(BinName, BinTxt),
     {reply, {text, ""}, State};
@@ -46,6 +50,8 @@ websocket_handle(_Data, State) ->
     {ok, State}.
 
 websocket_info({cast, BinName, BinMsg}, State) ->
+    lager:debug("Cast, FROM ~p MSG ~p", [BinName, BinMsg]),
+
     Reply = jsx:encode([{<<"message">>, BinMsg},{<<"from">>, BinName}]),
     {reply, {text, Reply}, State};
 websocket_info(_Info, State) ->
